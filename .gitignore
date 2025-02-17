@@ -1,0 +1,16 @@
+# Ignore Python virtual environment
+flask_mock_server/venv/
+
+# Ignore compiled binaries and build files
+esp32-meteo/bin/
+esp32-meteo/build/
+
+# Ignore temporary files and OS-specific files
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+# Ignore VS Code settings and workspace files
+.vscode/
+.vscode/settings.json

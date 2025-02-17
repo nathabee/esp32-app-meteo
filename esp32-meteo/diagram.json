@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "author": "Nathabee",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -100, "left": 50, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -100, "left": -150, "attrs": {} },
+    {
+      "type": "board-ssd1306",
+      "id": "oled1",
+      "top": 185.54,
+      "left": -95.77,
+      "attrs": { "i2cAddress": "0x3c" }
+    },
+    { "type": "wokwi-microsd-card", "id": "sd1", "top": 77.03, "left": -249.53, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "button1",
+      "top": 259.1,
+      "left": 51.5,
+      "rotate": 90,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "resistor1",
+      "top": 360,
+      "left": 66.65,
+      "rotate": 90,
+      "attrs": { "resistance": "10k", "color": "brown", "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:3V3", "dht1:VCC", "green", [ "v-48", "h-237.01", "v134.1" ] ],
+    [ "dht1:GND", "esp:GND.1", "black", [ "v38.4", "h124.65" ] ],
+    [ "esp:15", "dht1:SDA", "green", [ "h19.2", "v-230.4", "h-220.8", "v192", "h-38.5" ] ],
+    [ "oled1:SDA", "esp:21", "green", [ "v-28.8", "h105.67", "v-163.2" ] ],
+    [ "oled1:GND", "esp:GND.1", "black", [ "v-28.8", "h-38.4", "v-86.4", "h16.21" ] ],
+    [ "oled1:SCL", "esp:22", "green", [ "v-48", "h48.3", "v-172.8" ] ],
+    [ "oled1:VCC", "esp:3V3", "red", [ "v-48", "h-67.05", "v-192" ] ],
+    [ "sd1:CS", "esp:5", "green", [ "h230.4", "v-134.34" ] ],
+    [ "sd1:DI", "esp:23", "green", [ "h28.8", "v-240.09", "h153.6", "v38.4" ] ],
+    [ "sd1:GND", "esp:GND.1", "black", [ "h9.6", "v-57.49" ] ],
+    [ "sd1:VCC", "esp:3V3", "red", [ "h57.6", "v-201.46" ] ],
+    [ "sd1:DO", "esp:19", "green", [ "h48", "v9.71", "h153.6", "v-115.2" ] ],
+    [ "sd1:SCK", "esp:18", "green", [ "h19.2", "v67.19", "h192", "v-182.4" ] ],
+    [ "button1:1.l", "esp:4", "green", [] ],
+    [ "button1:1.r", "resistor1:1", "green", [ "v0" ] ],
+    [ "resistor1:2", "esp:GND.1", "black", [ "h-76.8", "v-341.2" ] ],
+    [ "button1:2.r", "esp:3V3", "red", [ "v29", "h-38.6", "v-403.2", "h0", "v-28.8" ] ]
+  ],
+  "dependencies": {
+  }
+}
