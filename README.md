@@ -6,7 +6,7 @@ This project integrates:
 - **A Flask mock server** to emulate ESP32 behavior during development
 
 ---
-
+ 
 ## **📌 Table of Contents**
 1. [Presentation](#1-presentation)
 2. [Use Wokwi Locally on VS Code](#2-use-wokwi-locally-on-vs-code)
