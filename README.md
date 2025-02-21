@@ -1,7 +1,3 @@
-Here is your **complete README** with an introduction, structured sections, and detailed installation instructions. I’ve formatted it for clarity and completeness. 🚀
-
----
-
 # **ESP32 Meteo Station: Full Stack Project**
 This project integrates:
 - **ESP32 hardware & Wokwi simulation** for weather data collection
@@ -12,20 +8,17 @@ This project integrates:
 ---
 
 ## **📌 Table of Contents**
-1. [Presentation](#presentation)
-2. [Use Wokwi Locally on VS Code](#use-wokwi-locally-on-vs-code)
-3. [Mock Server to Emulate the ESP32 Webserver](#mock-server-to-emulate-the-esp32-webserver)
-4. [MIT App Inventor App](#mit-app-inventor-app)
-5. [Django VPS Backend](#django-vps-backend)
-6. [Installation & Setup](#installation--setup)
+1. [Presentation](#1-presentation)
+2. [Use Wokwi Locally on VS Code](#2-use-wokwi-locally-on-vs-code)
+3. [Mock Server to Emulate the ESP32 Webserver](#3-mock-server-to-emulate-the-esp32-webserver)
+4. [MIT App Inventor App](#4-mit-app-inventor-app)
+5. [Django VPS Backend](#5-django-vps-backend)
 7. [Interface & Test](#interface-and-tests)
-
+ 
 ---
-Here’s a **corrected and improved** version of your **Presentation** section with **better clarity, grammar fixes, and improved readability**:
+ 
 
----
-
-# **📌 1. Presentation**
+# **1. Presentation**
 This project is a **complete IoT-based weather station** that:
 - **Measures** temperature & humidity using an **ESP32-based circuit**.
 - **Sends data** to a **Django backend** for storage & processing.
@@ -54,7 +47,7 @@ This project includes:
  
 ---
 
-# **📌 2. Use Wokwi Locally on VS Code**
+# **2. Use Wokwi Locally on VS Code**
 ## **🔹 Install Arduino CLI**
 In your **tools directory**, run:
 ```bash
@@ -124,7 +117,7 @@ wokwi-server --project .
 
 ---
 
-# **📌 3. Mock Server to Emulate ESP32 Webserver**
+# **3. Mock Server to Emulate ESP32 Webserver**
 During development, you can **emulate the ESP32 Webserver** using a Flask app.
 
 ### **🔹 Setup Flask Mock Server**
@@ -168,7 +161,7 @@ curl -X GET http://127.0.0.1:5000/api/sync/esp32-001/
 
 
 
-# **📌 4. MIT App Inventor App**
+# **4. MIT App Inventor App**
 The code of the project is stored in the **`mit-app-inventor`** directory as a **`.aia`** file.
 
 ## ** Description**
@@ -205,7 +198,7 @@ Here's your updated **README** for the Django VPS Backend, including details abo
 
 ---
 
-# **📌 5. Django VPS Backend**
+# **5. Django VPS Backend**
 ## **🌍 Overview**
 The **Django Meteo Backend** is responsible for **storing and serving weather data** collected from multiple ESP32 stations.
 
@@ -222,7 +215,7 @@ The **Django Meteo Backend** is responsible for **storing and serving weather da
 
 ---
 
-## **⚙️ Installation & Setup**
+## **Installation & Setup**
 ### **1️⃣ Clone the Django Meteo Code from GitHub**
 ```sh
 git clone https://github.com/YOUR_GITHUB_USERNAME/esp32-app-meteo.git
