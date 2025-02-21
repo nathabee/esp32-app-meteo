@@ -6,8 +6,12 @@
 #include <ArduinoJson.h>
 #include <time.h>
 
-#define DEBUGWOKWI true  // Set to true for debugging, false for production
- 
+#define DEBUGWOKWI true // Set to true for debugging, false for production
+
+// ESP32 Weather Station Configuration
+const char *STATION_ID = "esp32-001";          // Unique ESP32 ID
+const char *VPS_SERVER = "http://nathabee.de"; // Django backend URL
+
 #define BUTTON_PIN 4    // GPIO pin for the button
 #define DHTPIN 15       // DHT Sensor
 #define DHTTYPE DHT22   // DHT Sensor
@@ -43,7 +47,7 @@ struct WeatherRecord
 
 WeatherRecord history[MAX_RECORDS];
 int currentRecordIndex = 0;
- 
+
 // Structure to hold daily min/max records
 struct DailyRecord
 {
@@ -143,10 +147,21 @@ void setup()
   display.println("ESP32 Weather Station");
   display.display();
 
-  server.on("/status", HTTP_GET, handleStatus);
-  server.on("/lastreport", HTTP_GET, handleLastReport);
-  server.on("/history", HTTP_GET, handleHistory);
-  server.on("/maximahistory", HTTP_GET, handleMaximaHistory);
+  String statusEndpoint = "/api/status/" + String(STATION_ID);
+  server.on(statusEndpoint.c_str(), HTTP_GET, handleStatus);
+
+  String lastReportEndpoint = "/api/lastreport/" + String(STATION_ID);
+  server.on(lastReportEndpoint.c_str(), HTTP_GET, handleLastReport);
+
+  String historyEndpoint = "/api/history/" + String(STATION_ID);
+  server.on(historyEndpoint.c_str(), HTTP_GET, handleHistory);
+
+  String minMaxHistoryEndpoint = "/api/minmax/history/" + String(STATION_ID);
+  server.on(minMaxHistoryEndpoint.c_str(), HTTP_GET, handleMaximaHistory);
+
+  String syncEndpoint = "/api/sync/" + String(STATION_ID);
+  server.on(syncEndpoint.c_str(), HTTP_GET, handleSync);
+
   server.begin();
 
   Serial.println("HTTP server started.");
@@ -158,9 +173,18 @@ void loop()
 
   unsigned long now = millis();
   static unsigned long lastUpdate = 0;
+  static unsigned long lastSyncTime = 0; // Track last sync time
   static float previousTemp = 0;
   static float previousHum = 0;
   bool displayNeedsUpdate = false;
+
+  // 🔄 **Perform hourly sync if WiFi is connected**
+  if (WiFi.status() == WL_CONNECTED && (now - lastSyncTime >= 3600000))
+  { // 1 hour = 3600000 ms
+    Serial.println("⏳ Hourly sync triggered...");
+    lastSyncTime = now;
+    syncWithDjango();
+  }
 
   // Read DHT22 sensor data every 5 seconds
   if (now - lastUpdate >= 5000)
@@ -170,7 +194,7 @@ void loop()
     time_t nowtimestamp = time(NULL);
     struct tm timeinfo;
     localtime_r(&nowtimestamp, &timeinfo);
-  
+
     int year = timeinfo.tm_year + 1900;
     int month = timeinfo.tm_mon + 1;
     int day = timeinfo.tm_mday;
@@ -185,7 +209,7 @@ void loop()
       if (temp != previousTemp || hum != previousHum)
       {
         previousTemp = temp;
-        previousHum = hum; 
+        previousHum = hum;
         displayCurrentStatus();
       }
     }
@@ -194,33 +218,27 @@ void loop()
       Serial.println("Failed to read from DHT sensor.");
     }
 
+    // handle history of th weather
+    static unsigned long lastHistoryUpdate = 0;
 
-  // handle history of th weather
-  static unsigned long lastHistoryUpdate = 0;
+    if (now - lastHistoryUpdate >= 60000)
+    { // Every 30 minutes (1800000 ms)
+      lastHistoryUpdate = now;
 
-  if (now - lastHistoryUpdate >= 60000)
-  { // Every 30 minutes (1800000 ms)
-    lastHistoryUpdate = now;
-
-    
-    updateHistory(nowtimestamp,temp, hum);
+      updateHistory(nowtimestamp, temp, hum);
     }
   }
-
- 
-
 
   // Check for button press
   handleButtonPress();
 
   // Simulate handleStatus call every 30 seconds for debugging
   if (DEBUGWOKWI && ((now - lastTestRequest) >= 100000))
-  { 
-    lastTestRequest = now;  
+  {
+    lastTestRequest = now;
     simulateAllHandle();
   }
 }
- 
 
 void handleButtonPress()
 {
@@ -303,7 +321,6 @@ void updateHistory(time_t nowtimestamp, float temp, float hum)
                   temp, hum);
   }
 }
-
 
 void updateDailyMinMax(int year, int month, int day, float temp, float hum)
 {
@@ -411,7 +428,6 @@ void displayCurrentStatus()
   display.display();
 }
 
-
 void displayLastReport()
 {
   float temp = dht.readTemperature();
@@ -448,7 +464,6 @@ void displayDebugInfo()
   display.println(" dBm");
 }
 
-
 void displayTemperatureHistory(int page)
 {
 
@@ -459,7 +474,7 @@ void displayTemperatureHistory(int page)
 
     Serial.flush(); // Ensure the log is fully written out
   }
- 
+
   display.clearDisplay();
   display.setCursor(0, 0);
   display.println("Temp History:");
@@ -484,7 +499,6 @@ void displayTemperatureHistory(int page)
 
   display.display();
 }
-
 
 void displayHumidityHistory(int page)
 {
@@ -520,7 +534,6 @@ void displayHumidityHistory(int page)
 
   display.display();
 }
-
 
 // debug
 
@@ -576,70 +589,96 @@ void simulateAllHandle()
 
 void handleStatus()
 {
-  if (DEBUGWOKWI)
-  {
-    Serial.println("DEBUG: handlestatus called");
-  }
-
   StaticJsonDocument<300> json;
-  json["uptime_ms"] = millis();
-  json["free_heap"] = ESP.getFreeHeap();
-  json["wifi_strength"] = WiFi.RSSI();
-  json["status"] = "OK";
+  json["id"] = String(STATION_ID); // Hardcoded for now
+  json["ts"] = formatTimestamp(time(NULL));
+  json["upt"] = millis();
+  json["mem"] = ESP.getFreeHeap();
+  json["wif"] = WiFi.RSSI();
 
   String response;
   serializeJson(json, response);
+  server.send(200, "application/json", response);
+
+  Serial.println("📡 Sent system status to Django: " + response);
 
   if (DEBUGWOKWI)
   {
     Serial.println("DEBUG /status Response: " + response);
     Serial.flush(); // Ensure the log is fully written out
   }
-
-  server.send(200, "application/json", response);
 }
 
 void handleLastReport()
 {
-  float lastTemp = dht.readTemperature();
-  float lastHum = dht.readHumidity();
-  String response = "{";
-  response += "\"temperature\":" + String(lastTemp) + ",";
-  response += "\"humidity\":" + String(lastHum);
-  response += "}";
+  float temp = dht.readTemperature();
+  float hum = dht.readHumidity();
+
+  StaticJsonDocument<300> json;
+  json["id"] = String(STATION_ID); // Hardcoded for now
+  json["ts"] = formatTimestamp(time(NULL));
+  json["tmp"] = isnan(temp) ? -99.0 : temp;
+  json["hum"] = isnan(hum) ? -99.0 : hum;
+
+  String response;
+  serializeJson(json, response);
+  server.send(200, "application/json", response);
+
+  Serial.println("📡 Sent last report: " + response);
 
   if (DEBUGWOKWI)
   {
     Serial.println("DEBUG Last Report Response: " + response);
     Serial.flush(); // Ensure the log is fully written out
   }
+}
 
-  server.send(200, "application/json", response);
+String getLastUpdate()
+{
+  HTTPClient http;
+  String url = String(VPS_SERVER) + "/api/lastupdate/" + STATION_ID;
+  http.begin(url);
+  int httpResponseCode = http.GET();
+
+  String lastTimestamp = "1970-01-01 00:00:00"; // Default if no data is found
+  if (httpResponseCode == 200)
+  {
+    String response = http.getString();
+    StaticJsonDocument<200> json;
+    deserializeJson(json, response);
+    lastTimestamp = json["ts"].as<String>(); // Get last recorded timestamp
+  }
+  else
+  {
+    Serial.println("❌ Failed to get last update timestamp!");
+  }
+  http.end();
+  return lastTimestamp;
 }
 
 void handleMaximaHistory()
 {
-  StaticJsonDocument<2048> json; // Adjusted based on expected data size
+  StaticJsonDocument<2048> json;
   JsonArray data = json.createNestedArray("history");
 
-  // 🔄 Loop in reverse to show latest entries first
   for (int i = 0; i < historyCount; i++)
   {
-    int index = (historyStartIndex + historyCount - 1 - i) % MAX_DAYS; // Reverse FIFO order
+    int index = (historyStartIndex + i) % MAX_DAYS;
 
     JsonObject record = data.createNestedObject();
-    record["date"] = String(dailyHistory[index].year) + "-" +
-                     String(dailyHistory[index].month) + "-" +
-                     String(dailyHistory[index].day);
-    record["minTemp"] = dailyHistory[index].minTemp;
-    record["maxTemp"] = dailyHistory[index].maxTemp;
-    record["minHum"] = dailyHistory[index].minHum;
-    record["maxHum"] = dailyHistory[index].maxHum;
+    record["dt"] = String(dailyHistory[index].year) + "-" +
+                   String(dailyHistory[index].month) + "-" +
+                   String(dailyHistory[index].day);
+    record["tmin"] = dailyHistory[index].minTemp;
+    record["tmax"] = dailyHistory[index].maxTemp;
+    record["hmin"] = dailyHistory[index].minHum;
+    record["hmax"] = dailyHistory[index].maxHum;
   }
 
   String response;
   serializeJson(json, response);
   server.send(200, "application/json", response);
+  Serial.println("📡 Sent min/max history: " + response);
 
   if (DEBUGWOKWI)
   {
@@ -650,31 +689,38 @@ void handleMaximaHistory()
 
 void handleHistory()
 {
-  StaticJsonDocument<8192> json; // Increase if buffer overflow occurs
+  StaticJsonDocument<8192> json;
   JsonArray data = json.createNestedArray("history");
 
   for (int i = 0; i < MAX_RECORDS; i++)
   {
     int index = (currentRecordIndex + i) % MAX_RECORDS;
-    if (history[index].timestamp != 0) // Skip uninitialized records
-    {
+    if (history[index].timestamp != 0)
+    { // Skip empty records
       JsonObject record = data.createNestedObject();
-      record["timestamp"] = formatTimestamp(history[index].timestamp);
-      record["temperature"] = history[index].temperature;
-      record["humidity"] = history[index].humidity;
+      record["ts"] = formatTimestamp(history[index].timestamp);
+      record["tmp"] = history[index].temperature;
+      record["hum"] = history[index].humidity;
     }
   }
 
   String response;
   serializeJson(json, response);
   server.send(200, "application/json", response);
-
+  Serial.println("📡 Sent history data to Django: " + response);
 
   if (DEBUGWOKWI)
   {
     Serial.println("DEBUG /history Response: " + response);
     Serial.flush(); // Ensure the log is fully written out
   }
+}
+
+void handleSync()
+{
+  Serial.println("📡 Manual sync request received.");
+  server.send(200, "application/json", "{\"msg\": \"Sync process started\"}");
+  syncWithDjango();
 }
 
 void preloadFakeHistory()
@@ -688,10 +734,10 @@ void preloadFakeHistory()
   // ✅ Starting conditions
   float temp = 24.0, maxt = 24.0, mint = 24.0; // Initial temperature
   float hum = 40.0, maxh = 40.0, minh = 40.0;  // Initial humidity
-  int lastDay = timeinfo.tm_mday; // Track day changes
+  int lastDay = timeinfo.tm_mday;              // Track day changes
 
   historyCount = MAX_DAYS;      // Reset daily history count
-  historyStartIndex = MAX_DAYS ; // FIFO start index
+  historyStartIndex = MAX_DAYS; // FIFO start index
 
   // ✅ Loop through `MAX_RECORDS` (30-min intervals)
   for (int i = 0; i < MAX_RECORDS; i++)
@@ -718,20 +764,21 @@ void preloadFakeHistory()
     }
 
     // ✅ Store in `history[]` (detailed 30-min logs)
-    history[MAX_RECORDS-1-i].timestamp = recordTimestamp;
-    history[MAX_RECORDS-1-i].temperature = temp;
-    history[MAX_RECORDS-1-i].humidity = hum;
+    history[MAX_RECORDS - 1 - i].timestamp = recordTimestamp;
+    history[MAX_RECORDS - 1 - i].temperature = temp;
+    history[MAX_RECORDS - 1 - i].humidity = hum;
 
-    //Serial.printf("📝 History %d -> %04d-%02d-%02d %02d:%02d | Temp: %.1fC | Hum: %.1f%%\n",
-    //              i, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-    //              timeinfo.tm_hour, timeinfo.tm_min, temp, hum);
+    // Serial.printf("📝 History %d -> %04d-%02d-%02d %02d:%02d | Temp: %.1fC | Hum: %.1f%%\n",
+    //               i, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+    //               timeinfo.tm_hour, timeinfo.tm_min, temp, hum);
 
     // ✅ Detect day change → Store min/max in `dailyHistory[]`
-    if ((timeinfo.tm_mday != lastDay) or (i == (MAX_RECORDS-1)))
+    if ((timeinfo.tm_mday != lastDay) or (i == (MAX_RECORDS - 1)))
     {
-      // Calculate the FIFO index for the new daily entry 
-      if (historyStartIndex > 0) { 
-        historyStartIndex--; 
+      // Calculate the FIFO index for the new daily entry
+      if (historyStartIndex > 0)
+      {
+        historyStartIndex--;
       }
       // ✅ Store in `dailyHistory[]`
       dailyHistory[historyStartIndex].year = timeinfo.tm_year + 1900;
@@ -746,10 +793,10 @@ void preloadFakeHistory()
       mint = maxt = temp;
       minh = maxh = hum;
 
-      //Serial.printf("📅 DailyHistory[%d] -> %04d-%02d-%02d | Min: %.1fC Max: %.1fC | Min Hum: %.1f%% Max Hum: %.1f%%\n",
-      //              index, dailyHistory[historyStartIndex].year, dailyHistory[historyStartIndex].month, dailyHistory[historyStartIndex].day,
-      //              dailyHistory[historyStartIndex].minTemp, dailyHistory[historyStartIndex].maxTemp,
-      //              dailyHistory[historyStartIndex].minHum, dailyHistory[historyStartIndex].maxHum);
+      // Serial.printf("📅 DailyHistory[%d] -> %04d-%02d-%02d | Min: %.1fC Max: %.1fC | Min Hum: %.1f%% Max Hum: %.1f%%\n",
+      //               index, dailyHistory[historyStartIndex].year, dailyHistory[historyStartIndex].month, dailyHistory[historyStartIndex].day,
+      //               dailyHistory[historyStartIndex].minTemp, dailyHistory[historyStartIndex].maxTemp,
+      //               dailyHistory[historyStartIndex].minHum, dailyHistory[historyStartIndex].maxHum);
 
       lastDay = timeinfo.tm_mday; // Update last tracked day
     }
@@ -758,4 +805,111 @@ void preloadFakeHistory()
   // printDailyHistory();
 
   Serial.println("🎉 Fake history generation complete.");
+}
+
+/*
+🔄 Synchronization Steps
+1️⃣ ESP32 fetches /api/lastupdate/<id>/ to get the last recorded timestamp.
+2️⃣ ESP32 prepares bulk data (history, min/max) for transmission.
+3️⃣ ESP32 uploads /api/weather/upload/ (batch weather data).
+4️⃣ ESP32 uploads /api/minmax/upload/ (batch min/max data).
+5️⃣ ESP32 uploads /api/status/upload/ (latest system status).
+6️⃣ ESP32 repeats every hour or on network reconnect.
+*/
+void syncWithDjango()
+{
+  Serial.println("🔄 Syncing ESP32 data with Django...");
+
+  // 1️⃣ Fetch last update timestamp
+  String lastTimestamp = getLastUpdate();
+  Serial.println("📡 Last recorded update: " + lastTimestamp);
+
+  HTTPClient http;
+
+  // 2️⃣ Prepare & send historical weather data
+  StaticJsonDocument<8192> weatherJson;
+  JsonArray weatherData = weatherJson.createNestedArray("data");
+  weatherJson["id"] = STATION_ID;
+
+  for (int i = 0; i < MAX_RECORDS; i++)
+  {
+    int index = (currentRecordIndex + i) % MAX_RECORDS;
+    if (history[index].timestamp != 0 && formatTimestamp(history[index].timestamp) > lastTimestamp)
+    {
+      JsonObject record = weatherData.createNestedObject();
+      record["ts"] = formatTimestamp(history[index].timestamp);
+      record["tmp"] = history[index].temperature;
+      record["hum"] = history[index].humidity;
+    }
+  }
+
+  if (weatherData.size() > 0)
+  {
+    String weatherPayload;
+    serializeJson(weatherJson, weatherPayload);
+    http.begin(String(VPS_SERVER) + "/api/weather/upload/");
+
+    http.addHeader("Content-Type", "application/json");
+    int postResponse = http.PUT(weatherPayload);
+    Serial.println("📡 Weather upload response: " + String(postResponse));
+    http.end();
+  }
+  else
+  {
+    Serial.println("✅ No new weather data to send.");
+  }
+
+  // 3️⃣ Prepare & send Min/Max data
+  StaticJsonDocument<1024> minMaxJson;
+  JsonArray minMaxData = minMaxJson.createNestedArray("data");
+  minMaxJson["id"] = "esp32-001";
+
+  for (int i = 0; i < historyCount; i++)
+  {
+    int index = (historyStartIndex + i) % MAX_DAYS;
+    if (formatTimestamp(dailyHistory[index].year, dailyHistory[index].month, dailyHistory[index].day) > lastTimestamp)
+    {
+      JsonObject record = minMaxData.createNestedObject();
+      record["dt"] = formatTimestamp(dailyHistory[index].year, dailyHistory[index].month, dailyHistory[index].day);
+      record["tmin"] = dailyHistory[index].minTemp;
+      record["tmax"] = dailyHistory[index].maxTemp;
+      record["hmin"] = dailyHistory[index].minHum;
+      record["hmax"] = dailyHistory[index].maxHum;
+    }
+  }
+
+  if (minMaxData.size() > 0)
+  {
+    String minMaxPayload;
+    serializeJson(minMaxJson, minMaxPayload);
+    http.begin(String(VPS_SERVER) + "/api/minmax/upload/");
+
+    http.addHeader("Content-Type", "application/json");
+    int minMaxResponse = http.PUT(minMaxPayload);
+    Serial.println("📡 Min/Max upload response: " + String(minMaxResponse));
+    http.end();
+  }
+  else
+  {
+    Serial.println("✅ No new min/max data to send.");
+  }
+
+  // 4️⃣ Send system status
+  StaticJsonDocument<300> statusJson;
+  statusJson["id"] = "esp32-001";
+  statusJson["ts"] = formatTimestamp(time(NULL));
+  statusJson["upt"] = millis();
+  statusJson["mem"] = ESP.getFreeHeap();
+  statusJson["wif"] = WiFi.RSSI();
+
+  String statusPayload;
+  serializeJson(statusJson, statusPayload);
+  http.begin(String(VPS_SERVER) + "/api/status/upload/");
+
+  http.addHeader("Content-Type", "application/json");
+  int statusResponse = http.PUT(statusPayload);
+  Serial.println("📡 System status upload response: " + String(statusResponse));
+  http.end();
+
+  Serial.println("✅ Sync with Django complete.");
 }

@@ -1,5 +1,7 @@
 # Ignore Python virtual environment
-flask_mock_server/venv/
+venv/
+flask-mock-server/venv/
+django-meteo/venv/
 
 # Ignore compiled binaries and build files
 esp32-meteo/bin/

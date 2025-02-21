@@ -1,61 +1,100 @@
-# Use Wokwi Locally on VS Code
+Here is your **complete README** with an introduction, structured sections, and detailed installation instructions. I’ve formatted it for clarity and completeness. 🚀
 
-## Install Arduino CLI
+---
 
-In the repository `<TOOL-PATH>` where you store your tools, run:
+# **ESP32 Meteo Station: Full Stack Project**
+This project integrates:
+- **ESP32 hardware & Wokwi simulation** for weather data collection
+- **A Django backend** to store and serve data from a VPS
+- **An MIT App Inventor Android app** to display data
+- **A Flask mock server** to emulate ESP32 behavior during development
+
+---
+
+## **📌 Table of Contents**
+1. [Presentation](#presentation)
+2. [Use Wokwi Locally on VS Code](#use-wokwi-locally-on-vs-code)
+3. [Mock Server to Emulate the ESP32 Webserver](#mock-server-to-emulate-the-esp32-webserver)
+4. [MIT App Inventor App](#mit-app-inventor-app)
+5. [Django VPS Backend](#django-vps-backend)
+6. [Installation & Setup](#installation--setup)
+7. [Interface & Test](#interface-and-tests)
+
+---
+Here’s a **corrected and improved** version of your **Presentation** section with **better clarity, grammar fixes, and improved readability**:
+
+---
+
+# **📌 1. Presentation**
+This project is a **complete IoT-based weather station** that:
+- **Measures** temperature & humidity using an **ESP32-based circuit**.
+- **Sends data** to a **Django backend** for storage & processing.
+- **Retrieves & displays** weather data using an **Android app** and an **OLED display** on the ESP32.
+
+The system supports **multiple ESP32 weather stations**, a **Django backend running on a VPS**, and a **mobile frontend via an Android app**.
+
+### **🔹 Project Components**
+This project includes:
+- **ESP32 Firmware**: Code for the ESP32 circuit, including **Wokwi simulation** and **Arduino CLI** compatibility.
+- **Android App**: A mobile frontend, developed with **MIT App Inventor**, for displaying weather data.
+- **Mock Server**: A Flask-based server to **simulate multiple ESP32 devices** for testing.
+- **Django Backend**: A Python-based **Django server** (using **SQLite**) that stores weather data from multiple ESP32 stations and serves it to the app.
+
+### **🔹 Key Features**
+✅ **ESP32 Simulation with Wokwi** – Test the ESP32 code without real hardware.  
+✅ **Django Backend on VPS** – Stores and serves weather data from multiple ESP32 stations.  
+✅ **Android App (MIT App Inventor)** – Fetches and displays real-time weather data.  
+✅ **ESP32 OLED Display** – Locally displays weather data on the ESP32 itself.  
+✅ **Mock Server (Flask)** – Simulates ESP32 behavior for testing without physical hardware.  
+
+### **🔹 External References**
+- **ESP32 Hardware Simulation:** [Wokwi Simulator](https://wokwi.com/)    !!!!!!!!!!!To be done Need to be published
+- **MIT App Development:** [MIT App Inventor](https://appinventor.mit.edu/)   !!!!!!!!!!!To be done Need to be published
+- **Instructable:** !!!!!!!!!!!To be done Need to be published
+ 
+---
+
+# **📌 2. Use Wokwi Locally on VS Code**
+## **🔹 Install Arduino CLI**
+In your **tools directory**, run:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 ```
-
-Update `PATH` in `.bashrc`:
+Update **`PATH`** in `.bashrc`:
 ```bash
 export PATH=$PATH:<TOOL-PATH>
 ```
 
-## Project Structure
+---
 
-Create the following structure for your files:
-```plaintext
+## **🔹 Project Structure**
+```
 <my-project-path>/esp32-meteo/
-├── diagram.json         # Defines the hardware (ESP32, DHT22, OLED, etc.)
-├── wokwi.toml          # Specifies firmware and ELF paths for Wokwi simulation
-├── build/              # Contains compiled output files (created after compiling)
-│   ├── esp32-meteo.ino.bin  # Compiled firmware for flashing or simulation
-│   └── esp32-meteo.ino.elf  # Executable with debugging info
-└── esp32-meteo.ino     # The main Arduino code
+├── diagram.json      # Defines ESP32 hardware setup
+├── wokwi.toml       # Specifies firmware & ELF paths for Wokwi
+├── build/           # Compiled output files (after compilation)
+│   ├── esp32-meteo.ino.bin  # Compiled firmware
+│   ├── esp32-meteo.ino.elf  # Executable with debugging info
+└── esp32-meteo.ino  # Main Arduino code
 ```
+✅ **Copy `diagram.json` & code from Wokwi to your local project.**
 
-- Copy the `diagram.json` file from Wokwi's web simulation to `<my-project-path>/esp32-meteo/`.
-- Copy the code to `esp32-meteo.ino` (Arduino CLI requires a `.ino` file with the same name as the project directory).
-- Create a `wokwi.toml` file with the following content:
+---
 
-```toml
-[wokwi]
-version = 1
-firmware = "build/esp32-meteo.ino.bin"
-elf = "build/esp32-meteo.ino.elf"
-```
-
-After compilation, the `firmware.bin` and `firmware.elf` files will be created inside `build/`.
-
-## Install Wokwi Locally on VS Code
-
-Wokwi offers a free extension for Visual Studio Code that lets you run Wokwi simulations locally.
-
-### Steps to Set Up Wokwi in VS Code:
+## **🔹 Install Wokwi on VS Code**
 1. Install [Visual Studio Code](https://code.visualstudio.com/).
-2. Install the Wokwi Extension for VS Code:
-   - Open VS Code and go to the Extensions tab (left sidebar).
-   - Search for "Wokwi Simulator" and click **Install**.
-3. Activate your Wokwi license:
-   ```
+2. Install the **Wokwi Extension**:
+   - Open **Extensions Tab** (`CTRL + SHIFT + X`).
+   - Search for **"Wokwi Simulator"** and click **Install**.
+3. Activate the Wokwi License:
+   ```bash
    CTRL + SHIFT + P → "Wokwi: Request a License"
    CTRL + SHIFT + P → "Wokwi: Manually Enter License Key"
    ```
 
-## Install the ESP32 Core for Arduino CLI
+---
 
-Run the following commands to install the required core and libraries:
+## **🔹 Install ESP32 Core & Required Libraries**
 ```bash
 arduino-cli core update-index
 arduino-cli core install esp32:esp32
@@ -67,89 +106,211 @@ arduino-cli lib install "Time"
 arduino-cli lib install "NTPClient"
 ```
 
-### Verify Installed Libraries
-Run the following command to list all installed libraries:
+✅ **Verify installed libraries:**
 ```bash
 arduino-cli lib list
 ```
 
-## Compile the ESP32 Wokwi Project
+---
 
+## **🔹 Compile & Run ESP32 Wokwi Simulation**
 ```bash
 arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir build esp32-meteo.ino
 ```
-
-## Execute and Test
-
-### Simulate in VS Code (Wokwi)
-Run your Wokwi simulation in VS Code with:
+To **run the simulation** in VS Code:
 ```bash
 wokwi-server --project .
 ```
 
-### Start Simulation Directly from VS Code:
-1. Open VS Code in the project directory.
-2. Press `CTRL + SHIFT + P` → "Wokwi: Start Simulator".
-
 ---
 
-# Mock Server to Emulate the ESP32 Webserver
+# **📌 3. Mock Server to Emulate ESP32 Webserver**
+During development, you can **emulate the ESP32 Webserver** using a Flask app.
 
-## Setting Up the Environment
+### **🔹 Setup Flask Mock Server**
 ```bash
 mkdir flask_mock_server
 cd flask_mock_server
-python3 -m venv venv
-source venv/bin/activate  # (Linux/macOS)
-venv\Scripts\activate    # (Windows)
-pip install flask
+
+python3 -m venv ~/coding/project/esp32-app-meteo/flask-mock-server/venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate    # Windows
+pip install -r requirements.txt
+
+# pip install flask requests
+# pip freeze > requirements.txt
+
 ```
-Create a new Python script:
+Create the server script:
 ```bash
 touch mok_esp32_meteo_server.py
 ```
-Update `mok_esp32_meteo_server.py` with the provided example.
-
-## Start and Call the Mock Webserver
-Run the mock server with:
+Start the mock server:
 ```bash
 python mok_esp32_meteo_server.py
 ```
+✅ The server will run on:
+```
+http://0.0.0.0:5000/
+```
+✅ Test it:
+```bash 
+curl -X GET http://127.0.0.1:5000/api/status/esp32-001/
+curl -X GET http://127.0.0.1:5000/api/lastreport/esp32-001/
+curl -X GET http://127.0.0.1:5000/api/history/esp32-001/
+curl -X GET http://127.0.0.1:5000/api/minmax/history/esp32-001/
+curl -X GET http://127.0.0.1:5000/api/lastupdate/esp32-001/
+curl -X GET http://127.0.0.1:5000/api/sync/esp32-001/
 
-Flask will start on `http://0.0.0.0:5000/`. You should see output like:
-```plaintext
-Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
 ```
 
-## Accessing Your Endpoints
+---
 
-After starting the server, access the mock API using:
 
-### Browser
-```plaintext
-http://localhost:5000/status
-http://localhost:5000/lastreport
-http://localhost:5000/maximahistory
-http://localhost:5000/history
+
+# **📌 4. MIT App Inventor App**
+The code of the project is stored in the **`mit-app-inventor`** directory as a **`.aia`** file.
+
+## ** Description**
+With **MIT App Inventor**, we create an Android app capable of displaying weather data retrieved from a **web server**.  
+The server's **IP is configurable**, and data is retrieved in **JSON format**.
+
+### **🌐 The App Interfaces With:**
+✅ **ESP32 Circuit Board** – Emulating a web server in the **local network** (to be implemented).  
+✅ **Django Meteo Interface** – Hosted on a **VPS**, serving as the main backend.
+
+---
+
+## **📂 Access the Project Code**
+### **🔹 Reopen the Project from the `.aia` File (Stored in GitHub)**
+1. Open **[MIT App Inventor](https://appinventor.mit.edu/)**  
+2. Go to **Projects > Import project (.aia) from my computer**  
+3. Select the **`.aia`** file from your GitHub repository  
+4. Continue development 🚀  
+
+### **🔹 Export the MIT App Inventor Project**
+1. Open **MIT App Inventor**  
+2. Go to **Projects > Export selected project (.aia)**  
+3. Save the `.aia` file on your computer  
+4. Move the file into the **local GitHub repository**  
+5. Commit & push it to GitHub:
+   ```sh
+   git add mit-app-inventor/MyApp.aia
+   git commit -m "Added latest MIT App Inventor project"
+   git push origin main
+   ```
+
+---
+Here's your updated **README** for the Django VPS Backend, including details about the API endpoints, testing, and ensuring smooth integration with ESP32 and the Android app.
+
+---
+
+# **📌 5. Django VPS Backend**
+## **🌍 Overview**
+The **Django Meteo Backend** is responsible for **storing and serving weather data** collected from multiple ESP32 stations.
+
+### **How It Works**
+✅ **ESP32 stations synchronize data** with Django:  
+   - The ESP32 **requests the last update timestamp** from Django.  
+   - It **sends all new weather data** recorded since the last update.  
+   - Django **saves the data** and **updates the last timestamp** for the ESP32 station.
+
+✅ **Django serves weather data** to external applications:  
+   - The **Android app fetches the list of stations** from Django.  
+   - The app **retrieves weather data for a specific station** based on a time range.  
+   - Data is formatted in **JSON** for easy integration.
+
+---
+
+## **⚙️ Installation & Setup**
+### **1️⃣ Clone the Django Meteo Code from GitHub**
+```sh
+git clone https://github.com/YOUR_GITHUB_USERNAME/esp32-app-meteo.git
+cd esp32-app-meteo/django-meteo
+```
+ 
+### **2️⃣ Run the Setup Script**
+```sh
+chmod +x ./scripts/setup_production.sh
+./scripts/setup_production.sh
+```
+🚀 **This script will:**
+- ✅ **Create a virtual environment** (if it doesn't exist).
+- ✅ **Activate the virtual environment**.
+- ✅ **Install dependencies** (`pip install -r requirements.txt`).
+- ✅ **Run database migrations** (`python manage.py migrate`).
+- ✅ **Populate the database with fake ESP32 data** (`python scripts/populate_fake_data.py`).
+
+---
+
+### **3️⃣ Verify Installation**
+Run the test script:
+```sh
+./scripts/test_installation.sh
+```
+✅ **This script checks:**
+- That **Python and the virtual environment** are properly set up.
+- That **database migrations** were applied correctly.
+- That **fake ESP32 data** was inserted successfully.
+
+---
+
+### **4️⃣ Start the Django Server for development**
+Run the Django development server:
+```sh
+cd esp32-app-meteo/django-meteo
+source venv/bin/activate
+python manage.py runserver
+```
+✅ **This will:**
+- Start the server at `http://127.0.0.1:8000/`
+- Allow local testing of API endpoints.
+
+The end point should be :
+curl -X GET http://127.0.0.1:8000/api/stations/
+curl -X GET http://127.0.0.1:8000/api/status/esp32-test-001/
+curl -X GET http://127.0.0.1:8000/api/lastreport/esp32-test-001/
+curl -X GET http://127.0.0.1:8000/api/history/esp32-test-001/
+curl -X GET http://127.0.0.1:8000/api/minmax/history/esp32-test-001/
+curl -X GET http://127.0.0.1:8000/api/lastupdate/esp32-test-001/
+curl -X GET http://127.0.0.1:8000/api/sync/esp32-test-001/
+
+
+
+### **5 Deployment on production with jenkins and github** 
+ !!!!!!!!!!!To be done  
+
+
+
+### **6 Start the Django Server for production** 
+ !!!!!!!!!!!To be done  
+---
+
+
+## **📂 Project Structure**
+```
+django-meteo/
+│── api/         (Django app)
+│   ├── migrations/    (Database migration files)
+│   ├── models.py      (Database schema)
+│   ├── tests.py       (Unit tests)
+│   ├── views.py       (API logic)
+│── meteo/       (Django project, contains settings.py)
+│   ├── settings.py    (Django configuration)
+│   ├── urls.py        (API endpoints)
+│── manage.py    (Django project entry point)
+│── venv/        (Python virtual environment)
+│── scripts/     (Custom project management tools)
+│   ├── setup_production.sh   (Initial setup script)
+│   ├── test_installation.sh  (Checks if installation was successful)
+│   ├── populate_fake_data.py (Generates test ESP32 data)
 ```
 
-### cURL (Linux/macOS/Windows)
-```bash
-curl http://localhost:5000/status
-curl http://localhost:5000/lastreport
-curl http://localhost:5000/maximahistory
-curl http://localhost:5000/history
-```
+# **Interface and Tests**
+ 
 
-### From an Android App
-Find your PC’s IP address using:
-```bash
-ip a | grep inet  # Linux/macOS
-ipconfig          # Windows
-```
+## 📌 Documentation
+- 📖 [API Interface Definition](documentation/interface.md) – Details about API endpoints and JSON structures.
+- 🛠️ [Testing Instructions](documentation/test.md) – Steps to verify Django server functionality.
 
-Call the API from your Android app by replacing `localhost` with your PC's IP:
-```plaintext
-http://<YOUR_PC_IP>:5000/status
-```
-
+---
