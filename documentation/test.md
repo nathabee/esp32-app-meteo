@@ -1,5 +1,68 @@
 
-# TEST 
+# automatic testing
+
+a Django unit test automates API testing. This will allow you to validate that both the Django API and the mock ESP32 servers are working correctly.
+ **Unit test for Django and ESP32 MOK are in `api/tests.py` **
+ 
+### **✅ How to Run the Tests**
+
+
+1️⃣ **Unit test Django API with test database**
+
+**`test_django_api.py`** :
+   - Uses Django's test database (no need for the mock).
+   - Tests **6 GET** + **3 PUT** API endpoints.
+
+```sh
+python manage.py test api.tests.test_django_api
+```
+
+2️⃣.  **Integration test with ESP32 mock**
+
+In this test we will use the esp32_mok to simulate a weather station in local
+we will also use the django server in develeppement mode to make test
+
+**`test_mock_integration.py`** :
+   - Starts ESP32 mock server (`mock_esp32.py`).
+   - Ensures the mock **communicates with Django**.
+   - Tests **ESP32's GET requests** + **Sync test**.
+
+ **Ensure the Flask Mock Servers are Running**
+```sh
+cd flask-mock-server
+source venv/bin/activate
+python mock_esp32.py 1 &
+#python mock_esp32.py 2 &
+#python mock_esp32.py 3 &
+```
+
+ **Ensure Django Server is Running ** 
+```sh
+source venv/bin/activate
+python manage.py runserver
+```
+
+```sh
+python api/tests/test_mock_integration.py
+```
+
+
+---
+
+### **✅ What This Does**
+- **Tests Django API**
+  - Fetch **list of stations**
+  - Fetch **latest weather report**
+  - Upload **weather data**
+  - Upload **min/max data**
+  - Upload **status data**
+  
+- **Tests ESP32 Mock Server**
+  - Fetch **ESP32 last report**
+  - Trigger **sync process**
+
+
+# TEST Details
 
 ## ** ESP32 MOK **
 the ESP32 interface can be moked locally, using 
@@ -20,8 +83,16 @@ pip install flask
 Navigate to the directory where your Flask script is located and start the server:
 ```sh
 cd flask-mok-server
-python mok_esp32_meteo_server.py
+python mock_esp32.py 1 &
+python mock_esp32.py 2 &
+python mock_esp32.py 3 &
+
 ``` 
+This will start:
+
+esp32-001 on port 5000
+esp32-002 on port 5001
+esp32-003 on port 5002
 
 ### **3️⃣ Verify the Server is Running**
 Once started, you should see output similar to:
@@ -31,19 +102,24 @@ Once started, you should see output similar to:
 You can now test it by opening your browser and visiting: 
 - **Trigger sync:** [`http://127.0.0.1:5000/api/sync/`](http://127.0.0.1:5000/api/sync/)
 - **ESP32 last report:** [`http://127.0.0.1:5000/api/lastreport`](http://127.0.0.1:5000/api/lastreport/esp32-001/)
- 
-### ** automatic testing the mok
-```sh
-cd flask-mok-server
-python mok_mok_esp32_test.py
-``` 
-
-
-
-
+exemple test :
+(http://127.0.0.1:5000/api/lastreport/esp32-001/)
+(http://127.0.0.1:5001/api/lastreport/esp32-002/)
+(http://127.0.0.1:5002/api/lastreport/esp32-003/)
+(http://127.0.0.1:5000/api/sync/esp32-001/)
 
 ## **Test Django Server**
+
+### **start django server** 
+
+```sh 
+cd esp32-app-meteo/django-meteo
+source venv/bin/activate
+python manage.py runserver
+```
+
 ### **Test API Using `curl`**
+
 #### ✅ **List Stations**
 ```sh
 curl http://127.0.0.1:8000/api/stations/
@@ -61,7 +137,7 @@ curl http://127.0.0.1:8000/api/history/esp32-001/
 
 #### ✅ **Get Min/Max History**
 ```sh
-curl http://127.0.0.1:8000/api/maximahistory/esp32-001/
+curl http://127.0.0.1:8000/api/minmax/history/esp32-001/
 ```
 
 #### ✅ **ESP32 Uploads New Weather Data**
@@ -69,11 +145,12 @@ curl http://127.0.0.1:8000/api/maximahistory/esp32-001/
 curl -X PUT http://127.0.0.1:8000/api/weather/upload/ \
      -H "Content-Type: application/json" \
      -d '{
-           "station_id": "esp32-001",
-           "timestamp": "2025-02-20T12:00:00Z",
-           "temperature": 22.5,
-           "humidity": 60.0
+           "id": "esp32-outdoor",
+           "data": [
+             {"ts": "20250220120000", "tmp": 22.5, "hum": 60.0}
+           ]
          }'
+
 ```
 
 #### ✅ **ESP32 Uploads Min/Max Data**
@@ -81,20 +158,35 @@ curl -X PUT http://127.0.0.1:8000/api/weather/upload/ \
 curl -X PUT http://127.0.0.1:8000/api/minmax/upload/ \
      -H "Content-Type: application/json" \
      -d '{
-           "station_id": "esp32-001",
-           "date": "2025-02-20",
-           "min_temperature": 18.3,
-           "max_temperature": 39.4,
-           "min_humidity": 37.1,
-           "max_humidity": 43.9
+           "id": "esp32-001",
+           "dt": "20250220",
+           "tmin": 18.3,
+           "tmax": 39.4,
+           "hmin": 37.1,
+           "hmax": 43.9
          }'
+
 ```
 
-#### ✅ **Django Calculates Min/Max Automatically**
+
+
+#### ✅ **ESP32 Uploads Status Data**
 ```sh
-curl http://127.0.0.1:8000/api/minmax/calculate/esp32-001/
+curl -X PUT http://127.0.0.1:8000/api/status/upload/ \
+     -H "Content-Type: application/json" \
+     -d '{
+           "id": "esp32-001",
+           "ts": "20250220120000",
+           "upt": 100000,
+           "mem": 223484,
+           "wif": -89
+         }'
+
+
 ```
 
+
+ 
 ---
 
 ### **Test with Postman**

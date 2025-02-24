@@ -54,7 +54,11 @@ ESP32 synchronizes with the **Django VPS** every hour (or when triggered via `/a
 ---
 
 ## **📌 JSON Format for `GET` Requests (ESP32 WebServer)**
+
 ESP32 provides **local JSON responses** matching Django format.
+All temperature (tmp, tmin, tmax) and humidity (hum, hmin, hmax) values must be formatted with a maximum of one decimal place (e.g., 24.7 instead of 24.734). This applies to both GET responses and PUT uploads.
+Time stamp will be format YYYYMMDDHHMISS (example "20250220130000")
+Date will be format  YYYYMMDD (example "20250220")
 
 ### **📌 `/api/status`**
 ```json
@@ -70,7 +74,7 @@ ESP32 provides **local JSON responses** matching Django format.
 ```json
 {
   "id": "esp32-001",
-  "ts": "2025-02-20 13:00:00",
+  "ts": "20250220130000",
   "tmp": 24.7,
   "hum": 55.2
 }
@@ -81,8 +85,8 @@ ESP32 provides **local JSON responses** matching Django format.
 {
   "id": "esp32-001",
   "history": [
-    {"ts": "2025-02-20 10:00:00", "tmp": 22.5, "hum": 60.0},
-    {"ts": "2025-02-20 11:00:00", "tmp": 23.0, "hum": 58.5}
+    {"ts": "20250220100000", "tmp": 22.5, "hum": 60.0},
+    {"ts": "20250220110000", "tmp": 23.0, "hum": 58.5}
   ]
 }
 ```
@@ -92,8 +96,8 @@ ESP32 provides **local JSON responses** matching Django format.
 {
   "id": "esp32-001",
   "history": [
-    {"dt": "2025-02-19", "tmin": 18.3, "tmax": 39.4, "hmin": 37.1, "hmax": 43.9},
-    {"dt": "2025-02-18", "tmin": 17.5, "tmax": 38.2, "hmin": 35.4, "hmax": 42.7}
+    {"dt": "20250219", "tmin": 18.3, "tmax": 39.4, "hmin": 37.1, "hmax": 43.9},
+    {"dt": "20250218", "tmin": 17.5, "tmax": 38.2, "hmin": 35.4, "hmax": 42.7}
   ]
 }
 ```
@@ -110,38 +114,10 @@ ESP32 provides **local JSON responses** matching Django format.
 ## **📌 JSON Format for `PUT` Requests (ESP32 → Django)**
 ESP32 pushes data to Django in **batch format**.
 
-### **📌 `/api/weather/upload/`**
-```json
-{
-  "id": "esp32-001",
-  "data": [
-    {"ts": "2025-02-20 10:00:00", "tmp": 22.5, "hum": 60.0},
-    {"ts": "2025-02-20 11:00:00", "tmp": 23.0, "hum": 58.5}
-  ]
-}
-```
-
-### **📌 `/api/minmax/upload/`**
-```json
-{
-  "id": "esp32-001",
-  "data": [
-    {"dt": "2025-02-19", "tmin": 18.3, "tmax": 39.4, "hmin": 37.1, "hmax": 43.9}
-  ]
-}
-```
-
-### **📌 `/api/status/upload/`**
-```json
-{
-  "id": "esp32-001",
-  "ts": "2025-02-20 12:00:00",
-  "upt": 100000,
-  "mem": 223484,
-  "wif": -89
-}
-```
- 
+The request format is defined in Django interface
+All temperature (tmp, tmin, tmax) and humidity (hum, hmin, hmax) values must be formatted with a maximum of one decimal place (e.g., 24.7 instead of 24.734). This applies to both GET responses and PUT uploads.
+ Time stamp will be format YYYYMMDDHHMISS (example "20250220130000")
+Date will be format  YYYYMMDD (example "20250220")
 
 
 # **📡 Django API Interface Definition**  
@@ -152,7 +128,9 @@ ESP32 pushes data to Django in **batch format**.
 ## **📌 Overview of API Endpoints**  
 
 The Django backend provides **RESTful API endpoints** for **ESP32 stations and the Android app**.  
-
+All temperature (tmp, tmin, tmax) and humidity (hum, hmin, hmax) values must be formatted with a maximum of one decimal place (e.g., 24.7 instead of 24.734). This applies to both GET responses and PUT uploads.
+Time stamp will be format YYYYMMDDHHMISS (example "20250220130000")
+Date will be format  YYYYMMDD (example "20250220")
 ---
 
 ## **🔹 `PUT` Requests (ESP32 → Django)**  
@@ -188,9 +166,9 @@ ESP32 uploads **multiple weather readings**.
 {
   "id": "esp32-001",
   "data": [
-    {"ts": "2025-02-20 10:00:00", "tmp": 22.5, "hum": 60.0},
-    {"ts": "2025-02-20 11:00:00", "tmp": 23.0, "hum": 58.5},
-    {"ts": "2025-02-20 12:00:00", "tmp": 24.1, "hum": 57.0}
+    {"ts": "20250220100000", "tmp": 22.5, "hum": 60.0},
+    {"ts": "20250220110000", "tmp": 23.0, "hum": 58.5},
+    {"ts": "20250220120000", "tmp": 24.1, "hum": 57.0}
   ]
 }
 ```
@@ -212,8 +190,8 @@ ESP32 uploads **multiple min/max records**.
 {
   "id": "esp32-001",
   "data": [
-    {"dt": "2025-02-19", "tmin": 18.3, "tmax": 39.4, "hmin": 37.1, "hmax": 43.9},
-    {"dt": "2025-02-18", "tmin": 17.5, "tmax": 38.2, "hmin": 35.4, "hmax": 42.7}
+    {"dt": "20250219", "tmin": 18.3, "tmax": 39.4, "hmin": 37.1, "hmax": 43.9},
+    {"dt": "20250218", "tmin": 17.5, "tmax": 38.2, "hmin": 35.4, "hmax": 42.7}
   ]
 }
 ```
@@ -234,7 +212,7 @@ ESP32 uploads **latest system status**.
 ```json
 {
   "id": "esp32-001",
-  "ts": "2025-02-20 12:00:00",
+  "ts": "20250220120000",
   "upt": 100000,
   "mem": 223484,
   "wif": -89
@@ -256,8 +234,8 @@ Retrieve **list of stations**.
 ```json
 {
   "stations": [
-    {"id": "esp32-001", "name": "Outdoor Sensor", "loc": "Garden", "created": "2025-02-15 10:30:00"},
-    {"id": "esp32-002", "name": "Indoor Sensor", "loc": "Living Room", "created": "2025-02-16 14:15:00"}
+    {"id": "esp32-001", "name": "Outdoor Sensor", "loc": "Garden", "created": "20250215103000"},
+    {"id": "esp32-002", "name": "Indoor Sensor", "loc": "Living Room", "created": "20250216141500"}
   ]
 }
 ```
@@ -271,6 +249,7 @@ Retrieve **system status**.
 ```json
 {
   "id": "esp32-001",
+  "ts": "20250220120000",
   "upt": 100000,
   "mem": 223484,
   "wif": -89
@@ -288,7 +267,7 @@ Retrieve **latest weather report**.
   "id": "esp32-001",
   "tmp": 24.7,
   "hum": 55.2,
-  "ts": "2025-02-20 13:00:00"
+  "ts": "20250220130000"
 }
 ```
 
@@ -302,9 +281,23 @@ Retrieve **historical weather data**.
 {
   "id": "esp32-001",
   "history": [
-    {"ts": "2025-02-20 10:00:00", "tmp": 22.5, "hum": 60.0},
-    {"ts": "2025-02-20 11:00:00", "tmp": 23.0, "hum": 58.5},
-    {"ts": "2025-02-20 12:00:00", "tmp": 24.1, "hum": 57.0}
+    {"ts": "20250220100010", "tmp": 22.5, "hum": 60.0},
+    {"ts": "20250220110011", "tmp": 23.0, "hum": 58.5},
+    {"ts": "20250220120010", "tmp": 24.1, "hum": 57.0}
+  ]
+}
+```
+
+## **📌 JSON Format for `GET /api/minmax/history/<id>/`**
+Retrieve **historical multiple min/max records**.  
+
+#### **🔹 Request Example:**
+```json
+{
+  "id": "esp32-001",
+  "history": [
+    {"dt": "20250219", "tmin": 18.3, "tmax": 39.4, "hmin": 37.1, "hmax": 43.9},
+    {"dt": "20250218", "tmin": 17.5, "tmax": 38.2, "hmin": 35.4, "hmax": 42.7}
   ]
 }
 ```
@@ -317,7 +310,8 @@ ESP32 **fetches last update timestamp** to determine **new data to send**.
 #### **🔹 Response Example:**
 ```json
 {
-  "ts": "2025-02-20 12:00:00"
+  "id": "esp32-001",
+  "ts": "20250220120010"
 }
 ```
 

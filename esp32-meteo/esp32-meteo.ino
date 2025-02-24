@@ -567,7 +567,7 @@ String formatTimestamp(time_t timestamp)
   localtime_r(&timestamp, &timeinfo); // Convert time_t to tm structure
 
   char buffer[25]; // No need for static buffer, use local instead
-  snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d:%02d",
+  snprintf(buffer, sizeof(buffer), "%04d%02d%02d%02d%02d%02d",
            timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
            timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 
@@ -640,7 +640,7 @@ String getLastUpdate()
   http.begin(url);
   int httpResponseCode = http.GET();
 
-  String lastTimestamp = "1970-01-01 00:00:00"; // Default if no data is found
+  String lastTimestamp = "19700101000000"; // Default if no data is found
   if (httpResponseCode == 200)
   {
     String response = http.getString();
@@ -666,8 +666,8 @@ void handleMaximaHistory()
     int index = (historyStartIndex + i) % MAX_DAYS;
 
     JsonObject record = data.createNestedObject();
-    record["dt"] = String(dailyHistory[index].year) + "-" +
-                   String(dailyHistory[index].month) + "-" +
+    record["dt"] = String(dailyHistory[index].year) +
+                   String(dailyHistory[index].month)  +
                    String(dailyHistory[index].day);
     record["tmin"] = dailyHistory[index].minTemp;
     record["tmax"] = dailyHistory[index].maxTemp;

@@ -117,7 +117,7 @@ wokwi-server --project .
 
 ---
 
-# **3. Mock Server to Emulate ESP32 Webserver**
+# **3. Mock Server to Emulate the ESP32 Webserver**
 During development, you can **emulate the ESP32 Webserver** using a Flask app.
 
 ### **🔹 Setup Flask Mock Server**

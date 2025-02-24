@@ -39,15 +39,17 @@ echo "🔍 Checking for fake ESP32 data..."
 # Capture the output of the Python script
 FAKE_DATA_CHECK=$(python manage.py shell <<EOF
 from api.models import Station
-print(Station.objects.filter(station_id="esp32-test-001").exists())
+stations = ["esp32-001", "esp32-002", "esp32-003"]
+existing_stations = [s for s in stations if Station.objects.filter(station_ref=s).exists()]
+print(len(existing_stations))
 EOF
 )
 
-# Check if output is "True"
-if [[ "$FAKE_DATA_CHECK" == "True" ]]; then
-    echo "✅ Fake ESP32 station exists in the database."
+# Check if we have all 3 stations
+if [[ "$FAKE_DATA_CHECK" -eq 3 ]]; then
+    echo "✅ All 3 ESP32 stations exist in the database."
 else
-    echo "❌ Fake ESP32 data is missing! Run: python scripts/populate_fake_data.py"
+    echo "❌ Missing stations! Expected 3, but found $FAKE_DATA_CHECK. Run: python scripts/populate_fake_data.py"
     exit 1
 fi
 
