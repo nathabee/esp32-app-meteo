@@ -4,7 +4,7 @@ All extern interfaces in the project are defined here.
 
 
 **📌 Extra Documentation**  
-- 🛠️ [Testing Instructions](documentation/test.md) – Steps to verify Django server functionality.  
+- 🛠️ [Testing Instructions](test.md) – Steps to verify Django server functionality.  
 
 
 
@@ -126,11 +126,11 @@ Date will be format  YYYYMMDD (example "20250220")
 ---
 
 ## **📌 Overview of API Endpoints**  
-
 The Django backend provides **RESTful API endpoints** for **ESP32 stations and the Android app**.  
 All temperature (tmp, tmin, tmax) and humidity (hum, hmin, hmax) values must be formatted with a maximum of one decimal place (e.g., 24.7 instead of 24.734). This applies to both GET responses and PUT uploads.
 Time stamp will be format YYYYMMDDHHMISS (example "20250220130000")
 Date will be format  YYYYMMDD (example "20250220")
+
 ---
 
 ## **🔹 `PUT` Requests (ESP32 → Django)**  
