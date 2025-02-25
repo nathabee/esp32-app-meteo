@@ -1,22 +1,39 @@
 # **ESP32 Meteo Station: Full Stack Project**
-This project integrates:
-- **ESP32 hardware & Wokwi simulation** for weather data collection
-- **A Django backend** to store and serve data from a VPS
-- **An MIT App Inventor Android app** to display data
-- **A Flask mock server** to emulate ESP32 behavior during development
+
+## **🌦️ Presentation: ESP32 Weather Station Project**
+
+After purchasing the **Freenove Ultimate Starter Kit** with the **ESP32-WROVER**—a powerful ESP32-based development board—I decided to embark on an exciting project: **building a Weather Station**.
+
+This project transforms the **ESP32 into a weather monitoring device** capable of measuring **temperature** and **humidity**. The ESP32 acts as a **web server**, delivering real-time data in **JSON format** through API routes like `/lastreport` and `/status`. This allows users to access **live weather information** from anywhere on the network.
+
+In addition to serving data via a web server, the **readings will be displayed on a 128x64 OLED screen**. The project also includes an **Android app built using MIT App Inventor**, which fetches and displays data from the ESP32’s API, providing a **clean, user-friendly interface**.
+
+### **☁️ Cloud Integration**
+Each **ESP32 Weather Station** will **store its data permanently on a Django server** in the cloud.  
+All **registered weather stations** will upload their data to the **Django backend**, ensuring reliable storage and easy access.
+
+### **📱 Project Architecture**
+This project integrates the following components:
+✅ **ESP32 Weather Station** for data collection (hardware & firmware, tested with Wokwi)  
+✅ **Django backend** to store and serve data from a VPS (with SQLite database)  
+✅ **Android app** for data visualization (developed with MIT App Inventor)  
+✅ **Flask mock server** to emulate ESP32 behavior during development  
+
+---
 
 ```mermaid
 graph TD
   subgraph Cloud
+    Database["Database (SQLite)"]
     DjangoServer["🌐 Cloud-Based Django Server"]
   end
 
-  subgraph Remote_Weather_Stations
+  subgraph Remote Weather Stations
     RemoteStation1["🌡️ Remote Weather Station 1"]
     RemoteStation2["🌡️ Remote Weather Station 2"]
   end
 
-  subgraph Local_Network
+  subgraph Local Network
     HandyDevice["📱 Device (Handy)"]
     LocalWeatherStation["🌦️ Local Weather Station"]
   end
@@ -24,9 +41,11 @@ graph TD
   %% Data Flow %%
   RemoteStation1 -- "PUT: Upload Data" --> DjangoServer
   RemoteStation2 -- "PUT: Upload Data" --> DjangoServer
+  Database -- "retrieve Data" --> DjangoServer
   LocalWeatherStation -- "PUT: Upload Data" --> DjangoServer
   DjangoServer -- "GET: Config/Commands" --> RemoteStation1
   DjangoServer -- "GET: Config/Commands" --> RemoteStation2
+  DjangoServer -- "Save Data" --> Database
   DjangoServer -- "GET: Config/Commands" --> LocalWeatherStation
   HandyDevice -- "GET: Fetch Reports/Data" --> DjangoServer
   HandyDevice -- "GET: Direct Query" --> LocalWeatherStation
@@ -35,7 +54,7 @@ graph TD
  
 ## **📌 Table of Contents**
 1. [Presentation](#1-presentation)
-2. [Use Wokwi Locally on VS Code](#2-use-wokwi-locally-on-vs-code)
+2. [ESP32 Weather Station](#2-esp32-weather-station)
 3. [Mock Server to Emulate the ESP32 Webserver](#3-mock-server-to-emulate-the-esp32-webserver)
 4. [MIT App Inventor App](#4-mit-app-inventor-app)
 5. [Django VPS Backend](#5-django-vps-backend)
@@ -73,7 +92,10 @@ This project includes:
  
 ---
 
-# **2. Use Wokwi Locally on VS Code**
+# **2. ESP32 Weather Station**
+
+
+ Use Wokwi Locally on VS Code
 ## **🔹 Install Arduino CLI**
 In your **tools directory**, run:
 ```bash
