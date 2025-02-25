@@ -1,30 +1,29 @@
 # **ESP32 Meteo Station: Full Stack Project**
 
-## **🌦️ Presentation: ESP32 Weather Station Project**
+## **🌦️ Overview**
+The **ESP32 Meteo Station** is an IoT-based weather monitoring system designed to:
+- **Collect** real-time **temperature & humidity** data using an **ESP32-based device**.
+- **Store** sensor readings in a **Django backend** running on a VPS.
+- **Retrieve & display** data through an **Android app** (MIT App Inventor) and an **OLED screen**.
+- **Support multiple ESP32 stations**, enabling a **scalable monitoring system**.
 
-After purchasing the **Freenove Ultimate Starter Kit** with the **ESP32-WROVER**—a powerful ESP32-based development board—I decided to embark on an exciting project: **building a Weather Station**.
-
-This project transforms the **ESP32 into a weather monitoring device** capable of measuring **temperature** and **humidity**. The ESP32 acts as a **web server**, delivering real-time data in **JSON format** through API routes like `/lastreport` and `/status`. This allows users to access **live weather information** from anywhere on the network.
-
-In addition to serving data via a web server, the **readings will be displayed on a 128x64 OLED screen**. The project also includes an **Android app built using MIT App Inventor**, which fetches and displays data from the ESP32’s API, providing a **clean, user-friendly interface**.
-
-### **☁️ Cloud Integration**
-Each **ESP32 Weather Station** will **store its data permanently on a Django server** in the cloud.  
-All **registered weather stations** will upload their data to the **Django backend**, ensuring reliable storage and easy access.
-
-### **📱 Project Architecture**
-This project integrates the following components:
-✅ **ESP32 Weather Station** for data collection (hardware & firmware, tested with Wokwi)  
-✅ **Django backend** to store and serve data from a VPS (with SQLite database)  
-✅ **Android app** for data visualization (developed with MIT App Inventor)  
-✅ **Flask mock server** to emulate ESP32 behavior during development  
+Each ESP32 device acts as a **web server**, exposing **JSON API endpoints** (`/lastreport`, `/status`) to provide real-time weather data. A **Flask-based mock server** is available to **simulate ESP32 interactions** for development and testing.
 
 ---
 
+## **🛠 System Architecture**
+The project consists of:
+
+✅ **ESP32 Weather Stations** (Hardware & firmware, tested with Wokwi)  
+✅ **Django Backend** (Cloud-based API & storage using SQLite)  
+✅ **Android App** (User-friendly interface for real-time monitoring)  
+✅ **Flask Mock Server** (Simulates ESP32 devices for development & testing)  
+
+### **🌍 Data Flow**
 ```mermaid
 graph TD
   subgraph Cloud
-    Database["Database (SQLite)"]
+    Database["📂 Database (SQLite)"]
     DjangoServer["🌐 Cloud-Based Django Server"]
   end
 
@@ -41,7 +40,7 @@ graph TD
   %% Data Flow %%
   RemoteStation1 -- "PUT: Upload Data" --> DjangoServer
   RemoteStation2 -- "PUT: Upload Data" --> DjangoServer
-  Database -- "retrieve Data" --> DjangoServer
+  Database -- "Retrieve Data" --> DjangoServer
   LocalWeatherStation -- "PUT: Upload Data" --> DjangoServer
   DjangoServer -- "GET: Config/Commands" --> RemoteStation1
   DjangoServer -- "GET: Config/Commands" --> RemoteStation2
@@ -50,48 +49,25 @@ graph TD
   HandyDevice -- "GET: Fetch Reports/Data" --> DjangoServer
   HandyDevice -- "GET: Direct Query" --> LocalWeatherStation
 ```
+
 ---
- 
+
 ## **📌 Table of Contents**
-1. [Presentation](#1-presentation)
-2. [ESP32 Weather Station](#2-esp32-weather-station)
-3. [Mock Server to Emulate the ESP32 Webserver](#3-mock-server-to-emulate-the-esp32-webserver)
-4. [MIT App Inventor App](#4-mit-app-inventor-app)
-5. [Django VPS Backend](#5-django-vps-backend)
-7. [Interface & Test](#interface-and-tests)
- 
----
- 
+1. [ESP32 Weather Station](#esp32-weather-station)
+2. [Mock Server to Emulate the ESP32 Webserver](#mock-server-to-emulate-the-esp32-webserver)
+3. [MIT App Inventor App](#mit-app-inventor-app)
+4. [Django VPS Backend](#django-vps-backend)
+5. [Interface & Tests](#interface-and-tests)
 
-# **1. Presentation**
-This project is a **complete IoT-based weather station** that:
-- **Measures** temperature & humidity using an **ESP32-based circuit**.
-- **Sends data** to a **Django backend** for storage & processing.
-- **Retrieves & displays** weather data using an **Android app** and an **OLED display** on the ESP32.
-
-The system supports **multiple ESP32 weather stations**, a **Django backend running on a VPS**, and a **mobile frontend via an Android app**.
-
-### **🔹 Project Components**
-This project includes:
-- **ESP32 Firmware**: Code for the ESP32 circuit, including **Wokwi simulation** and **Arduino CLI** compatibility.
-- **Android App**: A mobile frontend, developed with **MIT App Inventor**, for displaying weather data.
-- **Mock Server**: A Flask-based server to **simulate multiple ESP32 devices** for testing.
-- **Django Backend**: A Python-based **Django server** (using **SQLite**) that stores weather data from multiple ESP32 stations and serves it to the app.
-
-### **🔹 Key Features**
-✅ **ESP32 Simulation with Wokwi** – Test the ESP32 code without real hardware.  
-✅ **Django Backend on VPS** – Stores and serves weather data from multiple ESP32 stations.  
-✅ **Android App (MIT App Inventor)** – Fetches and displays real-time weather data.  
-✅ **ESP32 OLED Display** – Locally displays weather data on the ESP32 itself.  
-✅ **Mock Server (Flask)** – Simulates ESP32 behavior for testing without physical hardware.  
-
-### **🔹 External References**
-- **ESP32 Hardware Simulation:** [Wokwi Simulator](https://wokwi.com/)    !!!!!!!!!!!To be done Need to be published
-- **MIT App Development:** [MIT App Inventor](https://appinventor.mit.edu/)   !!!!!!!!!!!To be done Need to be published
-- **Instructable:** !!!!!!!!!!!To be done Need to be published
- 
 ---
 
+## **🔗 External References**
+📌 **ESP32 Hardware Simulation:** [Wokwi Simulator](https://wokwi.com/) _(To be published)_  
+📌 **MIT App Development:** [MIT App Inventor](https://appinventor.mit.edu/) _(To be published)_  
+📌 **Instructable Guide:** _(To be published)_  
+
+---
+ 
 # **2. ESP32 Weather Station**
 
 
